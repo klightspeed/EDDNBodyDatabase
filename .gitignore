@@ -7,3 +7,6 @@ packages
 Thumbs.db
 *.VC.db
 *.VC.VC.opendb
+App.*.config
+.*.sw?
+*~
