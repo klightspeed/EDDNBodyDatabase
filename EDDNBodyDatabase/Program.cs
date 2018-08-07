@@ -12,6 +12,8 @@ namespace EDDNBodyDatabase
     {
         static void Main(string[] args)
         {
+            string eddnbasedir = args[0];
+
             BodyDatabase.Init();
 
             if (BodyDatabase.SystemCount() < 154700)
@@ -26,7 +28,7 @@ namespace EDDNBodyDatabase
             BodyDatabase.LoadNamedBodiesLocal("NamedBodies.tsv");
 
             // Process 3.x entries, excluding 3.0.3
-            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir("EDDN", 
+            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir(eddnbasedir, 
                     "Journal.Scan-2018-02-2?.jsonl.bz2",
                     "Journal.Scan-2018-03-*.jsonl.bz2",
                     "Journal.Scan-2018-04-*.jsonl.bz2",
@@ -41,15 +43,15 @@ namespace EDDNBodyDatabase
                 ), true, true, true, true, true);
 
             // Process entries without BodyID / SystemAddress
-            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir("EDDN", "Journal.Scan-2018-*.jsonl.bz2"), true, true, true, false, true);
+            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir(eddnbasedir, "Journal.Scan-2018-*.jsonl.bz2"), true, true, true, false, true);
             // Process entries without BodyID / SystemAddress / Luminosity / Composition
-            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir("EDDN", "Journal.Scan-*.jsonl.bz2"), true, false, false, false, true);
+            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir(eddnbasedir, "Journal.Scan-*.jsonl.bz2"), true, false, false, false, true);
             // Process entries without BodyID / SystemAddress / Luminosity / Composition / AxialTilt
-            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir("EDDN", "Journal.Scan-*.jsonl.bz2"), false, false, false, false, true);
+            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir(eddnbasedir, "Journal.Scan-*.jsonl.bz2"), false, false, false, false, true);
             // Process 3.0.3 entries
-            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir("EDDN", "Journal.Scan-2018-*.jsonl.bz2"), true, true, true, true, false);
+            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir(eddnbasedir, "Journal.Scan-2018-*.jsonl.bz2"), true, true, true, true, false);
             // Process everything else
-            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir("EDDN", "Journal.Scan-*.jsonl.bz2"), false, false, false, false, false);
+            XDatabase.ProcessScans(XDatabase.ReadEDDNBodiesFromDir(eddnbasedir, "Journal.Scan-*.jsonl.bz2"), false, false, false, false, false);
         }
     }
 }
