@@ -1194,7 +1194,7 @@ namespace EDDNBodyDatabase.Models
 
                 if (cmd is global::System.Data.SqlClient.SqlCommand)
                 {
-                    cmdtext = cmdtext + "OFFSET 0 FETCH NEXT @Limit ROWS ONLY";
+                    cmdtext = cmdtext + "OFFSET 0 ROWS FETCH NEXT @Limit ROWS ONLY";
                 }
                 else if (cmd is global::MySql.Data.MySqlClient.MySqlCommand)
                 {
