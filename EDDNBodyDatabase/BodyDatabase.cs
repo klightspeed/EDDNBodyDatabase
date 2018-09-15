@@ -516,7 +516,15 @@ namespace EDDNBodyDatabase
                             }
 
                             System.Diagnostics.Trace.WriteLine($"{Math.Min(i + 100, systems.Count)} systems processed");
+                            Console.Write(".");
+
+                            if (((i / 100) % 64) == 63)
+                            {
+                                Console.WriteLine($" {Math.Min(i + 100, systems.Count)}");
+                            }
                         }
+
+                        Console.WriteLine($" {systems.Count}");
                     }
                 }
             }
@@ -554,12 +562,14 @@ namespace EDDNBodyDatabase
         public static void LoadEDSMSystems(TextReader rdr)
         {
             Trace.WriteLine("Processing EDSM systems");
+            Console.WriteLine("Processing EDSM systems");
 
             int i = 0;
             List<JObject> lines = new List<JObject>();
             DateTime lastupdate = DateTime.MinValue;
             using (Models.BodyDbContext ctx = new Models.BodyDbContext())
             {
+
                 var sys = ctx.Set<Models.System>().OrderByDescending(e => e.EdsmId).FirstOrDefault();
                 if (sys != null && sys.EdsmId != 0)
                 {
@@ -662,9 +672,16 @@ namespace EDDNBodyDatabase
                     i += lines.Count;
 
                     Trace.WriteLine($"{i} entries processed");
+                    Console.Write(".");
+
+                    if (((i / 100) % 64) == 0)
+                    {
+                        Console.WriteLine($" {i}");
+                    }
                 }
             }
             while (lines.Count != 0);
+            Console.WriteLine($" {i}");
 
             Trace.WriteLine("Finished processing EDSM systems");
         }
@@ -686,6 +703,7 @@ namespace EDDNBodyDatabase
         {
             if (!File.Exists(filename))
             {
+                Console.WriteLine("Downloading systemsWithCoordinates.json");
                 using (WebClient client = new WebClient())
                 {
                     client.DownloadFile("https://www.edsm.net/dump/systemsWithCoordinates.json", filename);
