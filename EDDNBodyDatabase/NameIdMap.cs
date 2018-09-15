@@ -65,9 +65,15 @@ namespace EDDNBodyDatabase
             {
                 using (Models.BodyDbContext ctx = new Models.BodyDbContext())
                 {
-                    T map = new T { Name = name };
-                    ctx.Set<T>().Add(map);
-                    ctx.SaveChanges();
+                    T map = ctx.Set<T>().FirstOrDefault(v => v.Name == name);
+
+                    if (map == null)
+                    {
+                        map = new T { Name = name };
+                        ctx.Set<T>().Add(map);
+                        ctx.SaveChanges();
+                    }
+
                     IdMap[map.Id] = map;
                     NameMap[map.Name] = map;
                 }
