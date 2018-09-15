@@ -13,12 +13,13 @@ using System.Data;
 using System.Data.Common;
 using Newtonsoft.Json;
 using EDDNBodyDatabase.XModels;
+using System.Configuration;
 
 namespace EDDNBodyDatabase.Models
 {
     public class BodyDbContext : DbContext
     {
-        public BodyDbContext() : base("BodyDB.SqlExpress")
+        public BodyDbContext() : base(ConfigurationManager.AppSettings["BodyDBConnection"] ?? "BodyDB.Mysql")
         {
         }
 

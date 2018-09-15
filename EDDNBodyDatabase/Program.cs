@@ -13,6 +13,7 @@ namespace EDDNBodyDatabase
         static void Main(string[] args)
         {
             string eddnbasedir = args[0];
+            string edsmbasedir = args.Length >= 2 ? args[1] : ".";
 
             BodyDatabase.Init();
 
@@ -21,7 +22,7 @@ namespace EDDNBodyDatabase
                 BodyDatabase.LoadNamedSystems("NamedSystems.json");
             }
 
-            BodyDatabase.LoadEDSMSystemsLocal("systemsWithCoordinates.jsonl");
+            BodyDatabase.LoadEDSMSystemsLocal(System.IO.Path.Combine(edsmbasedir, "systemsWithCoordinates.jsonl"));
 
             XDatabase.CheckScanBaseHashes();
 
