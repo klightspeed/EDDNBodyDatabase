@@ -569,9 +569,9 @@ namespace EDDNBodyDatabase
             int i = 0;
             List<JObject> lines = new List<JObject>();
             DateTime lastupdate = DateTime.MinValue;
+            DateTime lastmod = DateTime.MinValue;
             using (Models.BodyDbContext ctx = new Models.BodyDbContext())
             {
-
                 var sys = ctx.Set<Models.System>().OrderByDescending(e => e.EdsmId).FirstOrDefault();
                 if (sys != null && sys.EdsmId != 0)
                 {
@@ -615,7 +615,7 @@ namespace EDDNBodyDatabase
 
                         foreach (JObject jo in lines)
                         {
-                            DateTime lastmod = jo.Value<DateTime>("date");
+                            lastmod = jo.Value<DateTime>("date");
                             if (lastmod >= lastupdate)
                             {
                                 int edsmid = jo.Value<int>("id");
@@ -678,7 +678,7 @@ namespace EDDNBodyDatabase
 
                     if (((i / 100) % 64) == 0)
                     {
-                        Console.WriteLine($" {i}");
+                        Console.WriteLine($" {i} {lastmod:yyyy-MM-dd'T'HH:mm:ss'Z'}");
                     }
                 }
             }
