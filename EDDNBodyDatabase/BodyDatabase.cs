@@ -39,6 +39,7 @@ namespace EDDNBodyDatabase
         public static NameIdMap<Models.TerraformState> TerraformState { get; private set; }
         public static NameIdMap<Models.Volcanism> Volcanism { get; private set; }
         public static NameIdMap<Models.Region, short> Region { get; private set; }
+        public static NameIdMap<Models.Region, int> RegionByAddress { get; private set; }
         public static NameIdMap<Models.BodyCustomName, short> BodyCustomName { get; private set; }
 
         #region EDSM Body to journal conversion
@@ -546,6 +547,7 @@ namespace EDDNBodyDatabase
             MaterialName = new NameIdMap<Models.MaterialName>(Models.SeedValues.MaterialName);
             PlanetClass = new NameIdMap<Models.PlanetClass>(Models.SeedValues.PlanetClass);
             Region = new NameIdMap<Models.Region, short>(Models.SeedValues.Region);
+            RegionByAddress = new NameIdMap<Models.Region, int>(new Models.Region[0]);
             ReserveLevel = new NameIdMap<Models.ReserveLevel>(Models.SeedValues.ReserveLevel);
             RingClass = new NameIdMap<Models.RingClass>(Models.SeedValues.RingClass);
             ScanType = new NameIdMap<Models.ScanType>(Models.SeedValues.ScanType);

@@ -8,7 +8,7 @@ using System.Diagnostics;
 namespace EDDNBodyDatabase.Models
 {
     [DebuggerDisplay("{Name}: ({X0},{Y0},{Z0})")]
-    public class Region : INameIdMap<short>
+    public class Region : INameIdMap<short>, INameIdMap<int>
     {
         public short Id { get; set; }
         public string Name { get; set; }
@@ -18,5 +18,7 @@ namespace EDDNBodyDatabase.Models
         public int? SizeX { get; set; }
         public int? SizeY { get; set; }
         public int? SizeZ { get; set; }
+        public int? RegionAddress { get; set; }
+        int INameIdMap<int>.Id { get { return RegionAddress ?? -1; } set { RegionAddress = value; } }
     }
 }

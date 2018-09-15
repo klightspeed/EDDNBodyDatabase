@@ -814,7 +814,8 @@ namespace EDDNBodyDatabase.Models
                                     Z0 = (z + 39) * 40960,
                                     SizeX = 40960,
                                     SizeY = 40960,
-                                    SizeZ = 40960
+                                    SizeZ = 40960,
+                                    RegionAddress = (x + 39) | ((y + 32) << 7) | ((z + 39) << 13)
                                 };
                             }
                         }

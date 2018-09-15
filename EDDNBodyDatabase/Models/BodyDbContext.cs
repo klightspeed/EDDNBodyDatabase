@@ -72,6 +72,7 @@ namespace EDDNBodyDatabase.Models
                 m.HasKey(e => e.Id);
                 m.Property(e => e.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
                 m.Property(e => e.Name).IsRequired().HasMaxLength(128).HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute { IsUnique = true }));
+                m.Property(e => e.RegionAddress).IsOptional();
             });
 
             Configure<SoftwareVersion>(modelBuilder, m =>

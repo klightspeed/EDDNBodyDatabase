@@ -84,6 +84,10 @@
     <Compile Include="Migrations\201808071041122_InitialMigration.Designer.cs">
       <DependentUpon>201808071041122_InitialMigration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809150657127_AddRegionAddress.cs" />
+    <Compile Include="Migrations\201809150657127_AddRegionAddress.Designer.cs">
+      <DependentUpon>201809150657127_AddRegionAddress.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\BodyCustomName.cs" />
     <Compile Include="Models\BodyDbContext.cs" />
@@ -147,6 +151,9 @@
     <EmbeddedResource Include="Migrations\201808071041122_InitialMigration.resx">
       <DependentUpon>201808071041122_InitialMigration.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809150657127_AddRegionAddress.resx">
+      <DependentUpon>201809150657127_AddRegionAddress.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
