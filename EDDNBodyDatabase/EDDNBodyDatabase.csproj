@@ -115,6 +115,7 @@
     <Compile Include="Models\SystemBody.cs" />
     <Compile Include="Models\SystemBodyCustomName.cs" />
     <Compile Include="Models\SystemBodyDuplicate.cs" />
+    <Compile Include="Models\SystemSectorName.cs" />
     <Compile Include="XModels\SystemBodyStruct.cs" />
     <Compile Include="Models\SystemCustomName.cs" />
     <Compile Include="XModels\SystemStruct.cs" />

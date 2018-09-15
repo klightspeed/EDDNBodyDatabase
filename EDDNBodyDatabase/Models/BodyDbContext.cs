@@ -91,6 +91,26 @@ namespace EDDNBodyDatabase.Models
                 m.HasKey(e => e.Id);
                 m.Property(e => e.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
                 m.Property(e => e.ModSystemAddress).IsRequired().HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute()));
+                m.Property(e => e.EdsmId).IsRequired();
+                m.Ignore(e => e.SystemAddress);
+                m.Ignore(e => e.RegionId);
+                m.Ignore(e => e.SizeClass);
+                m.Ignore(e => e.Mid3);
+                m.Ignore(e => e.Mid2);
+                m.Ignore(e => e.Mid1b);
+                m.Ignore(e => e.Mid1a);
+                m.Ignore(e => e.Sequence);
+                m.Ignore(e => e.Region);
+                m.Ignore(e => e.Name);
+                m.Ignore(e => e.EdsmLastModified);
+                m.HasOptional(e => e.SystemCustomName).WithRequired().WillCascadeOnDelete(false);
+                m.HasOptional(e => e.SystemSectorName).WithRequired().WillCascadeOnDelete(false);
+            });
+
+            Configure<SystemSectorName>(modelBuilder, m =>
+            {
+                m.HasKey(e => e.Id);
+                m.Property(e => e.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
                 m.Property(e => e.RegionId).IsRequired();
                 m.Property(e => e.SizeClass).IsRequired();
                 m.Property(e => e.Mid3).IsRequired();
@@ -98,13 +118,8 @@ namespace EDDNBodyDatabase.Models
                 m.Property(e => e.Mid1b).IsRequired();
                 m.Property(e => e.Mid1a).IsRequired();
                 m.Property(e => e.Sequence).IsRequired();
-                m.Property(e => e.EdsmId).IsRequired();
-                m.Ignore(e => e.SystemAddress);
-                m.Ignore(e => e.Region);
-                m.Ignore(e => e.Name);
-                m.Ignore(e => e.EdsmLastModified);
-                m.HasOptional(e => e.SystemCustomName).WithRequired().WillCascadeOnDelete(false);
                 m.HasRequired(e => e.RegionRef).WithMany().HasForeignKey(e => e.RegionId).WillCascadeOnDelete(false);
+                m.Ignore(e => e.Region);
             });
 
             Configure<SystemCustomName>(modelBuilder, m =>
@@ -367,8 +382,9 @@ namespace EDDNBodyDatabase.Models
             using (var cmd = Database.Connection.CreateCommand())
             {
                 cmd.CommandText =
-                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, s.RegionId, s.SizeClass, s.Mid3, s.Mid2, s.Mid1b, s.Mid1a, s.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
+                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, sn.RegionId, sn.SizeClass, sn.Mid3, sn.Mid2, sn.Mid1b, sn.Mid1a, sn.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
                     "FROM Systems s " +
+                    "LEFT JOIN SystemSectorNames sn ON sn.Id = s.Id " +
                     "LEFT JOIN SystemCustomNames n ON n.Id = s.Id " +
                     "WHERE s.ModSystemAddress = @ModSystemAddress";
                 cmd.CommandType = CommandType.Text;
@@ -388,16 +404,24 @@ namespace EDDNBodyDatabase.Models
                             X = (int)cols[2],
                             Y = (int)cols[3],
                             Z = (int)cols[4],
-                            RegionId = (short)cols[5],
-                            SizeClass = (byte)cols[6],
-                            Mid3 = (byte)cols[7],
-                            Mid2 = (byte)cols[8],
-                            Mid1b = (byte)cols[9],
-                            Mid1a = (byte)cols[10],
-                            Sequence = (short)cols[11],
                             EdsmId = (int)cols[14],
                             EdsmLastModifiedSeconds = (int)cols[15],
                         };
+
+                        if (cols[5] != DBNull.Value)
+                        {
+                            sys.SystemSectorName = new SystemSectorName
+                            {
+                                Id = sys.Id,
+                                RegionId = (short)cols[5],
+                                SizeClass = (byte)cols[6],
+                                Mid3 = (byte)cols[7],
+                                Mid2 = (byte)cols[8],
+                                Mid1b = (byte)cols[9],
+                                Mid1a = (byte)cols[10],
+                                Sequence = (short)cols[11],
+                            };
+                        }
 
                         if (cols[13] != DBNull.Value)
                         {
@@ -431,8 +455,9 @@ namespace EDDNBodyDatabase.Models
             using (var cmd = Database.Connection.CreateCommand())
             {
                 cmd.CommandText =
-                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, s.RegionId, s.SizeClass, s.Mid3, s.Mid2, s.Mid1b, s.Mid1a, s.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
+                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, sn.RegionId, sn.SizeClass, sn.Mid3, sn.Mid2, sn.Mid1b, sn.Mid1a, sn.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
                     "FROM Systems s " +
+                    "LEFT JOIN SystemSectorNames sn ON sn.Id = s.Id " +
                     "JOIN SystemCustomNames n ON n.Id = s.Id " +
                     "WHERE n.CustomName = @SystemName";
                 cmd.CommandType = CommandType.Text;
@@ -452,16 +477,24 @@ namespace EDDNBodyDatabase.Models
                             X = (int)cols[2],
                             Y = (int)cols[3],
                             Z = (int)cols[4],
-                            RegionId = (short)cols[5],
-                            SizeClass = (byte)cols[6],
-                            Mid3 = (byte)cols[7],
-                            Mid2 = (byte)cols[8],
-                            Mid1b = (byte)cols[9],
-                            Mid1a = (byte)cols[10],
-                            Sequence = (short)cols[11],
                             EdsmId = (int)cols[14],
                             EdsmLastModifiedSeconds = (int)cols[15],
                         };
+
+                        if (cols[5] != DBNull.Value)
+                        {
+                            sys.SystemSectorName = new SystemSectorName
+                            {
+                                Id = sys.Id,
+                                RegionId = (short)cols[5],
+                                SizeClass = (byte)cols[6],
+                                Mid3 = (byte)cols[7],
+                                Mid2 = (byte)cols[8],
+                                Mid1b = (byte)cols[9],
+                                Mid1a = (byte)cols[10],
+                                Sequence = (short)cols[11],
+                            };
+                        }
 
                         sys.SystemCustomName = new SystemCustomName
                         {
@@ -492,8 +525,9 @@ namespace EDDNBodyDatabase.Models
             using (var cmd = Database.Connection.CreateCommand())
             {
                 cmd.CommandText =
-                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, s.RegionId, s.SizeClass, s.Mid3, s.Mid2, s.Mid1b, s.Mid1a, s.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
+                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, sn.RegionId, sn.SizeClass, sn.Mid3, sn.Mid2, sn.Mid1b, sn.Mid1a, sn.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
                     "FROM Systems s " +
+                    "LEFT JOIN SystemSectorNames sn ON sn.Id = s.Id " +
                     "JOIN SystemCustomNames n ON n.Id = s.Id " +
                     "WHERE s.EdsmId = @EdsmId";
                 cmd.CommandType = CommandType.Text;
@@ -513,16 +547,24 @@ namespace EDDNBodyDatabase.Models
                             X = (int)cols[2],
                             Y = (int)cols[3],
                             Z = (int)cols[4],
-                            RegionId = (short)cols[5],
-                            SizeClass = (byte)cols[6],
-                            Mid3 = (byte)cols[7],
-                            Mid2 = (byte)cols[8],
-                            Mid1b = (byte)cols[9],
-                            Mid1a = (byte)cols[10],
-                            Sequence = (short)cols[11],
                             EdsmId = (int)cols[14],
                             EdsmLastModifiedSeconds = (int)cols[15],
                         };
+
+                        if (cols[5] != DBNull.Value)
+                        {
+                            sys.SystemSectorName = new SystemSectorName
+                            {
+                                Id = sys.Id,
+                                RegionId = (short)cols[5],
+                                SizeClass = (byte)cols[6],
+                                Mid3 = (byte)cols[7],
+                                Mid2 = (byte)cols[8],
+                                Mid1b = (byte)cols[9],
+                                Mid1a = (byte)cols[10],
+                                Sequence = (short)cols[11],
+                            };
+                        }
 
                         if (cols[13] != DBNull.Value)
                         {
@@ -556,8 +598,9 @@ namespace EDDNBodyDatabase.Models
             using (var cmd = Database.Connection.CreateCommand())
             {
                 cmd.CommandText =
-                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, s.RegionId, s.SizeClass, s.Mid3, s.Mid2, s.Mid1b, s.Mid1a, s.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
+                    "SELECT s.Id, s.ModSystemAddress, s.X, s.Y, s.Z, sn.RegionId, sn.SizeClass, sn.Mid3, sn.Mid2, sn.Mid1b, sn.Mid1a, sn.Sequence, n.SystemAddress, n.CustomName, s.EdsmId, s.EdsmLastModifiedSeconds " +
                     "FROM Systems s " +
+                    "LEFT JOIN SystemSectorNames sn ON sn.Id = s.Id " +
                     "LEFT JOIN SystemCustomNames n ON n.Id = s.Id " +
                     "WHERE s.ModSystemAddress >= @ModSystemAddress AND s.ModSystemAddress < @ModSystemAddress + 65536";
                 cmd.CommandType = CommandType.Text;
@@ -582,16 +625,24 @@ namespace EDDNBodyDatabase.Models
                                 X = (int)cols[2],
                                 Y = (int)cols[3],
                                 Z = (int)cols[4],
-                                RegionId = (short)cols[5],
-                                SizeClass = (byte)cols[6],
-                                Mid3 = (byte)cols[7],
-                                Mid2 = (byte)cols[8],
-                                Mid1b = (byte)cols[9],
-                                Mid1a = (byte)cols[10],
-                                Sequence = (short)cols[11],
                                 EdsmId = (int)cols[14],
                                 EdsmLastModifiedSeconds = (int)cols[15],
                             };
+
+                            if (cols[5] != DBNull.Value)
+                            {
+                                sys.SystemSectorName = new SystemSectorName
+                                {
+                                    Id = sys.Id,
+                                    RegionId = (short)cols[5],
+                                    SizeClass = (byte)cols[6],
+                                    Mid3 = (byte)cols[7],
+                                    Mid2 = (byte)cols[8],
+                                    Mid1b = (byte)cols[9],
+                                    Mid1a = (byte)cols[10],
+                                    Sequence = (short)cols[11],
+                                };
+                            }
 
                             if (cols[13] != DBNull.Value)
                             {
@@ -1399,8 +1450,8 @@ namespace EDDNBodyDatabase.Models
         public void InsertSystems(IEnumerable<System> systems)
         {
             string syscmdtext =
-                "INSERT INTO Systems (ModSystemAddress, X, Y, Z, RegionId, SizeClass, Mid3, Mid2, Mid1b, Mid1a, Sequence, EdsmId, EdsmLastModifiedSeconds)";
-            string syscmdtext2 = " VALUES (@ModSystemAddress, @X, @Y, @Z, @RegionId, @SizeClass, @Mid3, @Mid2, @Mid1b, @Mid1a, @Sequence, @EdsmId, @EdsmLastModifiedSeconds)";
+                "INSERT INTO Systems (ModSystemAddress, X, Y, Z, EdsmId, EdsmLastModifiedSeconds)";
+            string syscmdtext2 = " VALUES (@ModSystemAddress, @X, @Y, @Z, @EdsmId, @EdsmLastModifiedSeconds)";
 
             Func<DbCommand, int> execsyscmd = GetInsertIdentity(ref syscmdtext, ref syscmdtext2);
 
@@ -1421,6 +1472,7 @@ namespace EDDNBodyDatabase.Models
             using (var txn = Database.Connection.BeginTransaction())
             {
                 DbCommand syscmd = null;
+                DbCommand sectcmd = null;
                 DbCommand namecmd = null;
 
                 try
@@ -1434,15 +1486,22 @@ namespace EDDNBodyDatabase.Models
                     var paramX = syscmd.AddParameter("@X", DbType.Int32);
                     var paramY = syscmd.AddParameter("@Y", DbType.Int32);
                     var paramZ = syscmd.AddParameter("@Z", DbType.Int32);
-                    var paramRegionId = syscmd.AddParameter("@RegionId", DbType.Int16);
-                    var paramSizeClass = syscmd.AddParameter("@SizeClass", DbType.Byte);
-                    var paramMid3 = syscmd.AddParameter("@Mid3", DbType.Byte);
-                    var paramMid2 = syscmd.AddParameter("@Mid2", DbType.Byte);
-                    var paramMid1b = syscmd.AddParameter("@Mid1b", DbType.Byte);
-                    var paramMid1a = syscmd.AddParameter("@Mid1a", DbType.Byte);
-                    var paramSequence = syscmd.AddParameter("@Sequence", DbType.Int16);
                     var paramEdsmId = syscmd.AddParameter("@EdsmId", DbType.Int32);
                     var paramEdsmLastModified = syscmd.AddParameter("@EdsmLastModifiedSeconds", DbType.Int32);
+
+                    sectcmd = Database.Connection.CreateCommand();
+                    sectcmd.Transaction = txn;
+
+                    sectcmd.CommandText = "INSERT INTO SystemSectorNames (Id, RegionId, SizeClass, Mid3, Mid2, Mid1b, Mid1a, Sequence) " +
+                                          "VALUES (@Id, @RegionId, @SizeClass, @Mid3, @Mid2, @Mid1b, @Mid1a, @Sequence)";
+                    var paramSysSectorId = sectcmd.AddParameter("@Id", DbType.Int32);
+                    var paramRegionId = sectcmd.AddParameter("@RegionId", DbType.Int16);
+                    var paramSizeClass = sectcmd.AddParameter("@SizeClass", DbType.Byte);
+                    var paramMid3 = sectcmd.AddParameter("@Mid3", DbType.Byte);
+                    var paramMid2 = sectcmd.AddParameter("@Mid2", DbType.Byte);
+                    var paramMid1b = sectcmd.AddParameter("@Mid1b", DbType.Byte);
+                    var paramMid1a = sectcmd.AddParameter("@Mid1a", DbType.Byte);
+                    var paramSequence = sectcmd.AddParameter("@Sequence", DbType.Int16);
 
                     namecmd = Database.Connection.CreateCommand();
                     namecmd.Transaction = txn;
@@ -1458,16 +1517,23 @@ namespace EDDNBodyDatabase.Models
                         paramX.Value = sys.X;
                         paramY.Value = sys.Y;
                         paramZ.Value = sys.Z;
-                        paramRegionId.Value = sys.RegionId;
-                        paramSizeClass.Value = sys.SizeClass;
-                        paramMid3.Value = sys.Mid3;
-                        paramMid2.Value = sys.Mid2;
-                        paramMid1b.Value = sys.Mid1b;
-                        paramMid1a.Value = sys.Mid1a;
-                        paramSequence.Value = sys.Sequence;
                         paramEdsmId.Value = sys.EdsmId;
                         paramEdsmLastModified.Value = sys.EdsmLastModifiedSeconds;
                         sys.Id = execsyscmd(syscmd);
+
+                        if (sys.SystemSectorName != null)
+                        {
+                            sys.SystemSectorName.Id = sys.Id;
+                            paramSysSectorId.Value = sys.SystemSectorName.Id;
+                            paramRegionId.Value = sys.SystemSectorName.RegionId;
+                            paramSizeClass.Value = sys.SystemSectorName.SizeClass;
+                            paramMid3.Value = sys.SystemSectorName.Mid3;
+                            paramMid2.Value = sys.SystemSectorName.Mid2;
+                            paramMid1b.Value = sys.SystemSectorName.Mid1b;
+                            paramMid1a.Value = sys.SystemSectorName.Mid1a;
+                            paramSequence.Value = sys.SystemSectorName.Sequence;
+                            sectcmd.ExecuteNonQuery();
+                        }
 
                         if (sys.SystemCustomName != null)
                         {
@@ -1484,6 +1550,11 @@ namespace EDDNBodyDatabase.Models
                     if (syscmd != null)
                     {
                         syscmd.Dispose();
+                    }
+
+                    if (sectcmd != null)
+                    {
+                        sectcmd.Dispose();
                     }
 
                     if (namecmd != null)
@@ -1667,13 +1738,16 @@ namespace EDDNBodyDatabase.Models
             System ret = new System
             {
                 SystemAddress = sysaddr,
-                RegionId = ps.RegionId,
-                SizeClass = ps.SizeClass,
-                Mid3 = ps.Mid3,
-                Mid2 = ps.Mid2,
-                Mid1b = ps.Mid1b,
-                Mid1a = ps.Mid1a,
-                Sequence = ps.Sequence,
+                SystemSectorName = ps.Region.RegionAddress != null ? null : new SystemSectorName
+                {
+                    RegionId = ps.RegionId,
+                    SizeClass = ps.SizeClass,
+                    Mid3 = ps.Mid3,
+                    Mid2 = ps.Mid2,
+                    Mid1b = ps.Mid1b,
+                    Mid1a = ps.Mid1a,
+                    Sequence = ps.Sequence
+                },
                 SystemCustomName = ispgname || customname == null ? null : new SystemCustomName
                 {
                     SystemAddress = sysaddr,

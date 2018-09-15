@@ -16,21 +16,22 @@ namespace EDDNBodyDatabase.Models
         public int X { get; set; }
         public int Y { get; set; }
         public int Z { get; set; }
-        public short RegionId { get; set; }
-        public string Region { get { return BodyDatabase.Region.GetName(RegionId); } set { RegionId = BodyDatabase.Region.GetId(value) ?? 0; } }
-        public byte Mid1a { get; set; }
-        public byte Mid1b { get; set; }
-        public byte Mid2 { get; set; }
-        public byte SizeClass { get; set; }
-        public byte Mid3 { get; set; }
-        public short Sequence { get; set; }
         public int EdsmId { get; set; }
         public int EdsmLastModifiedSeconds { get; set; }
 
         public SystemCustomName SystemCustomName { get; set; }
-        public virtual Region RegionRef { get; set; }
+        public SystemSectorName SystemSectorName { get; set; }
 
         public DateTime EdsmLastModified { get { return EdsmTimeZero.AddSeconds(EdsmLastModifiedSeconds); } set { EdsmLastModifiedSeconds = (int)value.Subtract(EdsmTimeZero).TotalSeconds; } }
+
+        public short RegionId { get { return SystemSectorName?.RegionId ?? BodyDatabase.RegionByAddress[(int)(ModSystemAddress >> 40)].Id; } }
+        public string Region { get { return BodyDatabase.Region.GetName(RegionId); } }
+        public byte Mid1a { get { return SystemSectorName?.Mid1a ?? (byte)(((ModSystemAddress >> 16) & 0x1FFFFF) % 26); } }
+        public byte Mid1b { get { return SystemSectorName?.Mid1b ?? (byte)((((ModSystemAddress >> 16) & 0x1FFFFF) / 26) % 26); } }
+        public byte Mid2 { get { return SystemSectorName?.Mid2 ?? (byte)((((ModSystemAddress >> 16) & 0x1FFFFF) / (26 * 26)) % 26); } }
+        public byte SizeClass { get { return SystemSectorName?.SizeClass ?? (byte)((ModSystemAddress >> 37) & 7); } }
+        public byte Mid3 { get { return SystemSectorName?.SizeClass ?? (byte)(((ModSystemAddress >> 16) & 0x1FFFFF) / (26 * 26 * 26)); } }
+        public short Sequence { get { return SystemSectorName?.Sequence ?? (short)(ModSystemAddress & 0xFFFF); } }
 
         public string Name
         {
@@ -95,8 +96,33 @@ namespace EDDNBodyDatabase.Models
             return (long)(seq | (x1 << 16) | (y1 << 23) | (z1 << 30) | ((ulong)sizeclass << 37) | (x2 << 40) | (y2 << 47) | (z2 << 53));
         }
 
+
+
         public static System From(XModels.XSystem sys, string customname)
         {
+            Region region = BodyDatabase.Region[sys.RegionId];
+            long modsysaddr = SystemAddressToModSystemAddress(sys.SystemAddress);
+            SystemSectorName syssect = null;
+            int mid = (int)((modsysaddr >> 16) & 0x1FFFFF);
+            int sysmid = ((sys.Mid3 * 26 + sys.Mid2) * 26 + sys.Mid1b) * 26 + sys.Mid1a;
+            int seq = (int)(modsysaddr & 0xFFFF);
+            int szcls = (int)((modsysaddr >> 37) & 7);
+
+            if (region.RegionAddress == null || region.RegionAddress != modsysaddr >> 40 || mid != sysmid || seq != sys.Sequence || szcls != sys.SizeClass)
+            {
+                syssect = new SystemSectorName
+                {
+                    Id = sys.DbId,
+                    Mid1a = sys.Mid1a,
+                    Mid1b = sys.Mid1b,
+                    Mid2 = sys.Mid2,
+                    Mid3 = sys.Mid3,
+                    SizeClass = sys.SizeClass,
+                    Sequence = sys.Sequence,
+                    RegionId = sys.RegionId
+                };
+            }
+
             return new System
             {
                 Id = sys.DbId,
@@ -104,13 +130,7 @@ namespace EDDNBodyDatabase.Models
                 X = (int)Math.Floor((sys.StarPosX + 49985) * 32.0 + 0.5),
                 Y = (int)Math.Floor((sys.StarPosY + 40985) * 32.0 + 0.5),
                 Z = (int)Math.Floor((sys.StarPosZ + 24105) * 32.0 + 0.5),
-                RegionId = sys.RegionId,
-                Mid1a = sys.Mid1a,
-                Mid1b = sys.Mid1b,
-                Mid2 = sys.Mid2,
-                Mid3 = sys.Mid3,
-                SizeClass = sys.SizeClass,
-                Sequence = sys.Sequence,
+                SystemSectorName = syssect,
                 SystemCustomName = customname == null ? null : new SystemCustomName
                 {
                     Id = sys.DbId,
