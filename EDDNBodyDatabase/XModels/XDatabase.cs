@@ -453,7 +453,7 @@ namespace EDDNBodyDatabase.XModels
 
             using (Models.BodyDbContext ctx = new Models.BodyDbContext())
             {
-                gwtimestamps = new HashSet<DateTime>(ctx.Set<Models.EDDNJournalScan>().Select(s => s.GatewayTimestamp).AsEnumerable().Select(t => DateTime.SpecifyKind(t, DateTimeKind.Utc)));
+                gwtimestamps = new HashSet<DateTime>(ctx.Set<Models.EDDNJournalScan>().Select(s => s.GatewayTimestampTicks).AsEnumerable().Select(t => Models.EDDNJournalScan.ScanTimeZero.AddTicks(t)));
             }
 
             Console.WriteLine("Processing scans");
