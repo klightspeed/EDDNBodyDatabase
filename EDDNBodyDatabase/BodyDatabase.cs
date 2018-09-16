@@ -608,66 +608,89 @@ namespace EDDNBodyDatabase
 
                 if (lines.Count != 0)
                 {
-                    using (Models.BodyDbContext ctx = new Models.BodyDbContext())
+                    int retries = 3;
+
+                    while (retries > 0)
                     {
-                        List<Models.System> syslist = new List<Models.System>();
-                        bool update = false;
+                        retries--;
 
-                        foreach (JObject jo in lines)
+                        try
                         {
-                            lastmod = jo.Value<DateTime>("date");
-                            if (lastmod >= lastupdate)
+                            using (Models.BodyDbContext ctx = new Models.BodyDbContext())
                             {
-                                int edsmid = jo.Value<int>("id");
-                                long? id64 = jo.Value<long?>("id64");
-                                string name = jo.Value<string>("name");
-                                JObject coords = (JObject)jo["coords"];
-                                float x = coords.Value<float>("x");
-                                float y = coords.Value<float>("y");
-                                float z = coords.Value<float>("z");
+                                List<Models.System> syslist = new List<Models.System>();
+                                bool update = false;
 
-                                Models.System sys = ctx.GetOrAddSystem(name, null, id64, x, y, z, true, true, edsmid);
-
-                                if (sys.EdsmId == 0 || sys.EdsmId != edsmid)
+                                foreach (JObject jo in lines)
                                 {
-                                    if (sys.Id != 0)
+                                    lastmod = jo.Value<DateTime>("date");
+                                    if (lastmod >= lastupdate)
                                     {
-                                        sys = ctx.Set<Models.System>().Find(sys.Id);
+                                        int edsmid = jo.Value<int>("id");
+                                        long? id64 = jo.Value<long?>("id64");
+                                        string name = jo.Value<string>("name");
+                                        JObject coords = (JObject)jo["coords"];
+                                        float x = coords.Value<float>("x");
+                                        float y = coords.Value<float>("y");
+                                        float z = coords.Value<float>("z");
+
+                                        Models.System sys = ctx.GetOrAddSystem(name, null, id64, x, y, z, true, true, edsmid);
+
+                                        if (sys.EdsmId == 0 || sys.EdsmId != edsmid)
+                                        {
+                                            if (sys.Id != 0)
+                                            {
+                                                sys = ctx.Set<Models.System>().Find(sys.Id);
+                                            }
+
+                                            sys.EdsmId = edsmid;
+                                            sys.EdsmLastModified = lastmod;
+                                            update = true;
+                                        }
+                                        else if (edsmid != sys.EdsmId)
+                                        {
+                                            sys.Id = 0;
+                                            sys.EdsmId = edsmid;
+                                            sys.EdsmLastModified = lastmod;
+                                        }
+                                        else if (lastmod > sys.EdsmLastModified)
+                                        {
+                                            sys = ctx.Set<Models.System>().Find(sys.Id);
+                                            sys.EdsmLastModified = lastmod;
+                                            update = true;
+                                        }
+
+                                        if (sys.Id == 0)
+                                        {
+                                            syslist.Add(sys);
+                                            update = true;
+                                        }
+                                    }
+                                }
+
+                                if (update)
+                                {
+                                    if (syslist.Count != 0)
+                                    {
+                                        ctx.InsertSystems(syslist);
                                     }
 
-                                    sys.EdsmId = edsmid;
-                                    sys.EdsmLastModified = lastmod;
-                                    update = true;
-                                }
-                                else if (edsmid != sys.EdsmId)
-                                {
-                                    sys.Id = 0;
-                                    sys.EdsmId = edsmid;
-                                    sys.EdsmLastModified = lastmod;
-                                }
-                                else if (lastmod > sys.EdsmLastModified)
-                                {
-                                    sys = ctx.Set<Models.System>().Find(sys.Id);
-                                    sys.EdsmLastModified = lastmod;
-                                    update = true;
-                                }
-
-                                if (sys.Id == 0)
-                                {
-                                    syslist.Add(sys);
-                                    update = true;
+                                    ctx.SaveChanges();
                                 }
                             }
+
+                            break;
                         }
-
-                        if (update)
+                        catch (Exception ex)
                         {
-                            if (syslist.Count != 0)
+                            if (retries == 0)
                             {
-                                ctx.InsertSystems(syslist);
+                                throw;
                             }
-
-                            ctx.SaveChanges();
+                            else
+                            {
+                                Trace.WriteLine(ex.Message);
+                            }
                         }
                     }
 
